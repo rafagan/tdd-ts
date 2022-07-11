@@ -48,4 +48,22 @@ describe('CheckLastEventStatusUseCase', () => {
         expect(mockFn.mock.calls.length).toBe(1)
         expect(mockFn.mock.calls[0][0]).toBe(groupIdDummy)
     })
+
+    it('should get last event data (spy version)', async () => {
+        // Given / Arrange
+        const groupIdDummy = 'dummy'
+        const repository = new FakeLoadLastEventRepository()
+        const sut = new CheckLastEventStatusUseCase(repository)
+
+        const spy = jest.spyOn(repository, 'loadLastEvent')
+
+        // When / Act
+        await sut.execute(groupIdDummy)
+
+        // Assert / Then
+        expect(repository.groupId).toBe(groupIdDummy)
+        expect(spy).toBeCalled()
+        expect(spy).toBeCalledTimes(1)
+        expect(spy).lastCalledWith(groupIdDummy)
+    })
 })

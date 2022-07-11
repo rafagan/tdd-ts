@@ -46,3 +46,4 @@
 - Liskov Substitution Principle: É possível substituir um RepositoryFake por uma implementação real sem side effects
 - Small commits: Evitar levar muito tempo para commitar, Squash e Rebase podem ser necessários
 - Mock Double: Substituto de uma função ou objeto utilizado para avaliar e consumir chamadas
+- Spy Double: Utilizado para avaliar chamadas, mas mantendo o comportamento original da função
