@@ -40,5 +40,7 @@
 - Arrange, Act, Assert (AAA)
 - Given When Then (GWT)
 - Repository/Gateway pattern: Class da camada Model que trás dados de fora da aplicação, fonte de dados
-- Dependency Inversion Principle: Unidades de alto nível não devem dependender de unidades de baixo nível
-- Inversion of Control / Dependency Injection (DJ): Ao invés da unidade criar suas instâncias, ela recebe de fora 
+- Dependency Inversion Principle: Entities e UseCases não devem depender diretamente de Gateways
+- Inversion of Control / Dependency Injection (DJ): Ao invés da unidade criar suas instâncias, ela recebe de fora
+- Fake Double: Implementação fake de alguma interface da aplicação que é injetada
+- Liskov Substitution Principle: É possível substituir um RepositoryFake por uma implementação real sem side effects

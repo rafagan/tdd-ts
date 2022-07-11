@@ -1,22 +1,28 @@
 class CheckLastEventStatusUseCase {
-    constructor(private readonly loadLastEventRepository: LoadLastEventRepository) {
-
-    }
+    constructor(private readonly loadLastEventRepository: LoadLastEventRepository) {}
 
     async execute(groupId: string): Promise<void> {
-        this.loadLastEventRepository.groupId = groupId
+        await this.loadLastEventRepository.loadLastEvent(groupId)
     }
 }
 
-class LoadLastEventRepository {
+interface LoadLastEventRepository {
+    loadLastEvent(groupId: string): Promise<void>
+}
+
+class LoadLastEventRepositoryFake implements LoadLastEventRepository {
     groupId?: string
+
+    async loadLastEvent(groupId: string): Promise<void> {
+        this.groupId = groupId
+    }
 }
 
 describe('CheckLastEventStatusUseCase', () => {
     it('should get last event data', async () => {
         // Given / Arrange
         const groupIdDummy = 'dummy'
-        const repository = new LoadLastEventRepository()
+        const repository = new LoadLastEventRepositoryFake()
         const sut = new CheckLastEventStatusUseCase(repository)
 
         // When / Act
