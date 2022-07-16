@@ -5,7 +5,10 @@ class CheckLastEventStatusUseCase {
 
     async execute(groupId: string): Promise<string> {
         const event = await this.loadLastEventRepository.loadLastEvent(groupId)
-        return event == null ? 'done' : 'active'
+        if(event == null) return 'done'
+
+        const now = new Date()
+        return event.endDate > now ? 'active' : 'inReview'
     }
 }
 
@@ -118,5 +121,19 @@ describe('CheckLastEventStatusUseCase', () => {
 
         // Assert / Then
         expect(status).toBe('active')
+    })
+
+    it('should return status active when now is after event end time', async () => {
+        // Given / Arrange
+        const { sut, repository } = makeSut()
+        repository.stub = {
+            endDate: new Date(new Date().getTime() - 1)
+        }
+
+        // When / Act
+        const status = await sut.execute('dummy')
+
+        // Assert / Then
+        expect(status).toBe('inReview')
     })
 })
