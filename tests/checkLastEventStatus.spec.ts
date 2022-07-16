@@ -1,14 +1,18 @@
 import { set, reset } from 'mockdate'
 
+type EventStatus = {
+    status: string
+}
+
 class CheckLastEventStatusUseCase {
     constructor(private readonly loadLastEventRepository: LoadLastEventRepository) {}
 
-    async execute(groupId: string): Promise<string> {
+    async execute(groupId: string): Promise<EventStatus> {
         const event = await this.loadLastEventRepository.loadLastEvent(groupId)
-        if(event == null) return 'done'
+        if(event == null) return {status: 'done'}
 
         const now = new Date()
-        return event.endDate > now ? 'active' : 'inReview'
+        return event.endDate >= now ? {status: 'active'} : {status: 'inReview'}
     }
 }
 
@@ -103,13 +107,27 @@ describe('CheckLastEventStatusUseCase', () => {
         repository.stub = undefined
 
         // When / Act
-        const status = await sut.execute('dummy')
+        const eventStatus = await sut.execute('dummy')
 
         // Assert / Then
-        expect(status).toBe('done')
+        expect(eventStatus.status).toBe('done')
     })
 
     it('should return status active when now is before event end time', async () => {
+        // Given / Arrange
+        const { sut, repository } = makeSut()
+        repository.stub = {
+            endDate: new Date(new Date().getTime())
+        }
+
+        // When / Act
+        const eventStatus = await sut.execute('dummy')
+
+        // Assert / Then
+        expect(eventStatus.status).toBe('active')
+    })
+
+    it('should return status active when now is equals event end time', async () => {
         // Given / Arrange
         const { sut, repository } = makeSut()
         repository.stub = {
@@ -117,10 +135,10 @@ describe('CheckLastEventStatusUseCase', () => {
         }
 
         // When / Act
-        const status = await sut.execute('dummy')
+        const eventStatus = await sut.execute('dummy')
 
         // Assert / Then
-        expect(status).toBe('active')
+        expect(eventStatus.status).toBe('active')
     })
 
     it('should return status active when now is after event end time', async () => {
@@ -131,9 +149,9 @@ describe('CheckLastEventStatusUseCase', () => {
         }
 
         // When / Act
-        const status = await sut.execute('dummy')
+        const eventStatus = await sut.execute('dummy')
 
         // Assert / Then
-        expect(status).toBe('inReview')
+        expect(eventStatus.status).toBe('inReview')
     })
 })
