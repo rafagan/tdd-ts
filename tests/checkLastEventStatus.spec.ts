@@ -12,7 +12,11 @@ class CheckLastEventStatusUseCase {
         if(event == null) return {status: 'done'}
 
         const now = new Date()
-        return event.endDate >= now ? {status: 'active'} : {status: 'inReview'}
+        if(event.endDate >= now) return {status: 'active'}
+
+        const reviewDurationMs = event.reviewDurationHour * 60 * 60 * 1000
+        const reviewDate = new Date(event.endDate.getTime() + reviewDurationMs)
+        return reviewDate >= now ? {status: 'inReview'} : {status: 'done'}
     }
 }
 
@@ -177,5 +181,22 @@ describe('CheckLastEventStatusUseCase', () => {
 
         // Assert / Then
         expect(eventStatus.status).toBe('inReview')
+    })
+
+    it('should return status done when now is after review time', async () => {
+        // Given / Arrange
+        const reviewDurationHour = 1
+        const reviewDurationMs = reviewDurationHour * 60 * 60 * 1000
+        const { sut, repository } = makeSut()
+        repository.stub = {
+            endDate: new Date(new Date().getTime() - reviewDurationMs - 1),
+            reviewDurationHour: reviewDurationHour
+        }
+
+        // When / Act
+        const eventStatus = await sut.execute('dummy')
+
+        // Assert / Then
+        expect(eventStatus.status).toBe('done')
     })
 })
