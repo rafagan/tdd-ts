@@ -4,8 +4,8 @@ class CheckLastEventStatusUseCase {
     constructor(private readonly loadLastEventRepository: LoadLastEventRepository) {}
 
     async execute(groupId: string): Promise<string> {
-        await this.loadLastEventRepository.loadLastEvent(groupId)
-        return 'done' /// Sufficient code for running current tests
+        const event = await this.loadLastEventRepository.loadLastEvent(groupId)
+        return event == null ? 'done' : 'active'
     }
 }
 
