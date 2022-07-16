@@ -18,6 +18,7 @@ class CheckLastEventStatusUseCase {
 
 type Event = {
     endDate: Date
+    reviewDurationHour: number
 }
 
 interface LoadLastEventRepository {
@@ -115,9 +116,11 @@ describe('CheckLastEventStatusUseCase', () => {
 
     it('should return status active when now is before event end time', async () => {
         // Given / Arrange
+        const dummyHour = 0
         const { sut, repository } = makeSut()
         repository.stub = {
-            endDate: new Date(new Date().getTime())
+            endDate: new Date(new Date().getTime()),
+            reviewDurationHour: dummyHour
         }
 
         // When / Act
@@ -129,9 +132,11 @@ describe('CheckLastEventStatusUseCase', () => {
 
     it('should return status active when now is equals event end time', async () => {
         // Given / Arrange
+        const dummyHour = 0
         const { sut, repository } = makeSut()
         repository.stub = {
-            endDate: new Date(new Date().getTime() + 1)
+            endDate: new Date(new Date().getTime() + 1),
+            reviewDurationHour: dummyHour
         }
 
         // When / Act
@@ -143,9 +148,28 @@ describe('CheckLastEventStatusUseCase', () => {
 
     it('should return status active when now is after event end time', async () => {
         // Given / Arrange
+        const dummyHour = 0
         const { sut, repository } = makeSut()
         repository.stub = {
-            endDate: new Date(new Date().getTime() - 1)
+            endDate: new Date(new Date().getTime() - 1),
+            reviewDurationHour: dummyHour
+        }
+
+        // When / Act
+        const eventStatus = await sut.execute('dummy')
+
+        // Assert / Then
+        expect(eventStatus.status).toBe('inReview')
+    })
+
+    it('should return status active when now is before review time', async () => {
+        // Given / Arrange
+        const reviewDurationHour = 1
+        const reviewDurationMs = reviewDurationHour * 60 * 60 * 1000
+        const { sut, repository } = makeSut()
+        repository.stub = {
+            endDate: new Date(new Date().getTime() - reviewDurationMs + 1),
+            reviewDurationHour: reviewDurationHour
         }
 
         // When / Act

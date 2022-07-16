@@ -32,6 +32,7 @@
 - Duplicate Code: Códigos iguais em lugares diferentes
 - Shotgun Surgery: Ao modificar o código em um lugar, você precisa modificar diversos outros lugares
 - Primitive obsession: Utilizar em excesso variáveis primitivas reduz a clareza do código
+- Implicit logic: Dar nomes claros, evitar tipos confusos
 
 ## Design Patterns/Principles/Conventions
 - TDD: Test Driven Development, Red - Green - Refactor
