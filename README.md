@@ -4,7 +4,7 @@
 * Id do Grupo
 
 > ## Fluxo primário
-1. Obter os dados da último evento do grupo (data de término e duração do mercado de notas)
+1. Obter os dados da último evento do grupo (data de término e duração)
 2. Retornar status "ativo" se o evento ainda não foi encerrado
 
 > ## Fluxo alternativo: Evento está no limite do encerramento
@@ -29,6 +29,8 @@
 - Improper instantiation: Criar instâncias no lugar errado
 - High Coupling: Consequência de ferir o Dependency Inversion Principle
 - Test Code in Production: Jamais misturar código e dependências de teste no produto
+- Duplicate Code: Códigos iguais em lugares diferentes
+- Shotgun Surgery: Ao modificar o código em um lugar, você precisa modificar diversos outros lugares
 
 ## Design Patterns/Principles/Conventions
 - TDD: Test Driven Development, Red - Green - Refactor
@@ -36,7 +38,7 @@
 - Single Responsability Principle: UseCases
 - Unit Test: Verificar o comportamento da menor unidade de sua aplicação (ex: useCase)
 - SUT: System Under Test, ou unidade sendo testada
-- Dummy Double: Dublê de teste usado para representar dados que são irrelevantes para o SUT
+- Dummy Double: Utilizado para representar dados que são irrelevantes para o SUT
 - Arrange, Act, Assert (AAA)
 - Given When Then (GWT)
 - Repository/Gateway pattern: Class da camada Model que trás dados de fora da aplicação, fonte de dados
@@ -47,3 +49,6 @@
 - Small commits: Evitar levar muito tempo para commitar, Squash e Rebase podem ser necessários
 - Mock Double: Substituto de uma função ou objeto utilizado para avaliar e consumir chamadas
 - Spy Double: Utilizado para avaliar chamadas, mas mantendo o comportamento original da função
+- Stub Double: Utilizado para representar dados que são relevantes para o SUT
+- Strategy: Design Pattern onde é possível intercambiar instâncias
+- Factory: Design Pattern onde é centralizada a criação da instância

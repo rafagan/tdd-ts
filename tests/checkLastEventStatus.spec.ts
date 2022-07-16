@@ -1,29 +1,58 @@
+import { set, reset } from 'mockdate'
+
 class CheckLastEventStatusUseCase {
     constructor(private readonly loadLastEventRepository: LoadLastEventRepository) {}
 
-    async execute(groupId: string): Promise<void> {
+    async execute(groupId: string): Promise<string> {
         await this.loadLastEventRepository.loadLastEvent(groupId)
+        return 'done' /// Sufficient code for running current tests
     }
 }
 
+type Event = {
+    endDate: Date
+}
+
 interface LoadLastEventRepository {
-    loadLastEvent(groupId: string): Promise<void>
+    loadLastEvent(groupId: string): Promise<Event | undefined>
 }
 
 class FakeLoadLastEventRepository implements LoadLastEventRepository {
     groupId?: string
+    stub?: Event
 
-    async loadLastEvent(groupId: string): Promise<void> {
+    async loadLastEvent(groupId: string): Promise<Event | undefined> {
         this.groupId = groupId
+        return this.stub
+    }
+}
+
+type SutOutput = {
+    sut: CheckLastEventStatusUseCase,
+    repository: FakeLoadLastEventRepository
+}
+
+const makeSut = (): SutOutput => {
+    const repository = new FakeLoadLastEventRepository()
+    const sut = new CheckLastEventStatusUseCase(repository)
+    return {
+        sut, repository
     }
 }
 
 describe('CheckLastEventStatusUseCase', () => {
+    beforeAll(() => {
+        set(new Date())
+    })
+
+    afterAll(() => {
+        reset()
+    })
+
     it('should get last event data', async () => {
         // Given / Arrange
         const groupIdDummy = 'dummy'
-        const repository = new FakeLoadLastEventRepository()
-        const sut = new CheckLastEventStatusUseCase(repository)
+        const { sut, repository } = makeSut()
 
         // When / Act
         await sut.execute(groupIdDummy)
@@ -35,8 +64,7 @@ describe('CheckLastEventStatusUseCase', () => {
     it('should get last event data only once', async () => {
         // Given / Arrange
         const groupIdDummy = 'dummy'
-        const repository = new FakeLoadLastEventRepository()
-        const sut = new CheckLastEventStatusUseCase(repository)
+        const { sut, repository } = makeSut()
 
         const mockFn = jest.fn()
         repository.loadLastEvent = mockFn
@@ -52,8 +80,7 @@ describe('CheckLastEventStatusUseCase', () => {
     it('should get last event data (spy version)', async () => {
         // Given / Arrange
         const groupIdDummy = 'dummy'
-        const repository = new FakeLoadLastEventRepository()
-        const sut = new CheckLastEventStatusUseCase(repository)
+        const { sut, repository } = makeSut()
 
         const spy = jest.spyOn(repository, 'loadLastEvent')
 
@@ -65,5 +92,31 @@ describe('CheckLastEventStatusUseCase', () => {
         expect(spy).toBeCalled()
         expect(spy).toBeCalledTimes(1)
         expect(spy).lastCalledWith(groupIdDummy)
+    })
+
+    it('should return status done when group has no event', async () => {
+        // Given / Arrange
+        const { sut, repository } = makeSut()
+        repository.stub = undefined
+
+        // When / Act
+        const status = await sut.execute('dummy')
+
+        // Assert / Then
+        expect(status).toBe('done')
+    })
+
+    it('should return status active when now is before event end time', async () => {
+        // Given / Arrange
+        const { sut, repository } = makeSut()
+        repository.stub = {
+            endDate: new Date(new Date().getTime() + 1)
+        }
+
+        // When / Act
+        const status = await sut.execute('dummy')
+
+        // Assert / Then
+        expect(status).toBe('active')
     })
 })
