@@ -31,11 +31,11 @@ interface LoadLastEventRepository {
 
 class FakeLoadLastEventRepository implements LoadLastEventRepository {
     groupId?: string
-    stub?: Event
+    eventStub?: Event
 
     async loadLastEvent(groupId: string): Promise<Event | undefined> {
         this.groupId = groupId
-        return this.stub
+        return this.eventStub
     }
 }
 
@@ -109,7 +109,7 @@ describe('CheckLastEventStatusUseCase', () => {
     it('should return status done when group has no event', async () => {
         // Given / Arrange
         const { sut, repository } = makeSut()
-        repository.stub = undefined
+        repository.eventStub = undefined
 
         // When / Act
         const eventStatus = await sut.execute('dummy')
@@ -121,9 +121,10 @@ describe('CheckLastEventStatusUseCase', () => {
     it('should return status active when now is before event end time', async () => {
         // Given / Arrange
         const dummyHour = 0
+        const afterNow = new Date(new Date().getTime() + 1)
         const { sut, repository } = makeSut()
-        repository.stub = {
-            endDate: new Date(new Date().getTime()),
+        repository.eventStub = {
+            endDate: afterNow,
             reviewDurationHour: dummyHour
         }
 
@@ -138,8 +139,9 @@ describe('CheckLastEventStatusUseCase', () => {
         // Given / Arrange
         const dummyHour = 0
         const { sut, repository } = makeSut()
-        repository.stub = {
-            endDate: new Date(new Date().getTime() + 1),
+        const rightNow = new Date(new Date().getTime())
+        repository.eventStub = {
+            endDate: rightNow,
             reviewDurationHour: dummyHour
         }
 
@@ -150,13 +152,13 @@ describe('CheckLastEventStatusUseCase', () => {
         expect(eventStatus.status).toBe('active')
     })
 
-    it('should return status active when now is after event end time', async () => {
+    it('should return status inReview when now is after event end time', async () => {
         // Given / Arrange
-        const dummyHour = 0
         const { sut, repository } = makeSut()
-        repository.stub = {
-            endDate: new Date(new Date().getTime() - 1),
-            reviewDurationHour: dummyHour
+        const beforeNow = new Date(new Date().getTime() - 1)
+        repository.eventStub = {
+            endDate: beforeNow,
+            reviewDurationHour: 1
         }
 
         // When / Act
@@ -166,13 +168,14 @@ describe('CheckLastEventStatusUseCase', () => {
         expect(eventStatus.status).toBe('inReview')
     })
 
-    it('should return status active when now is before review time', async () => {
+    it('should return status inReview when now is before review time', async () => {
         // Given / Arrange
         const reviewDurationHour = 1
         const reviewDurationMs = reviewDurationHour * 60 * 60 * 1000
+        const reviewDate = new Date(new Date().getTime() - reviewDurationMs)
         const { sut, repository } = makeSut()
-        repository.stub = {
-            endDate: new Date(new Date().getTime() - reviewDurationMs + 1),
+        repository.eventStub = {
+            endDate: reviewDate,
             reviewDurationHour: reviewDurationHour
         }
 
@@ -187,9 +190,10 @@ describe('CheckLastEventStatusUseCase', () => {
         // Given / Arrange
         const reviewDurationHour = 1
         const reviewDurationMs = reviewDurationHour * 60 * 60 * 1000
+        const beforeReviewDate = new Date(new Date().getTime() - reviewDurationMs - 1)
         const { sut, repository } = makeSut()
-        repository.stub = {
-            endDate: new Date(new Date().getTime() - reviewDurationMs - 1),
+        repository.eventStub = {
+            endDate: beforeReviewDate,
             reviewDurationHour: reviewDurationHour
         }
 
