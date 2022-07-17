@@ -1,7 +1,29 @@
 import { set, reset } from 'mockdate'
 
-type EventStatus = {
-    status: string
+type Event = {
+    endDate: Date
+    reviewDurationHour: number
+}
+
+class EventStatus {
+    status: 'active' | 'inReview' | 'done'
+
+    constructor(event?: Event) {
+        if(event == null) {
+            this.status = 'done'
+            return
+        }
+
+        const now = new Date()
+        if(event.endDate >= now) {
+            this.status = 'active'
+            return
+        }
+
+        const reviewDurationMs = event.reviewDurationHour * 60 * 60 * 1000
+        const reviewDate = new Date(event.endDate.getTime() + reviewDurationMs)
+        this.status = reviewDate >= now ? 'inReview' : 'done'
+    }
 }
 
 class CheckLastEventStatusUseCase {
@@ -9,20 +31,8 @@ class CheckLastEventStatusUseCase {
 
     async execute(groupId: string): Promise<EventStatus> {
         const event = await this.loadLastEventRepository.loadLastEvent(groupId)
-        if(event == null) return {status: 'done'}
-
-        const now = new Date()
-        if(event.endDate >= now) return {status: 'active'}
-
-        const reviewDurationMs = event.reviewDurationHour * 60 * 60 * 1000
-        const reviewDate = new Date(event.endDate.getTime() + reviewDurationMs)
-        return reviewDate >= now ? {status: 'inReview'} : {status: 'done'}
+        return new EventStatus(event)
     }
-}
-
-type Event = {
-    endDate: Date
-    reviewDurationHour: number
 }
 
 interface LoadLastEventRepository {
